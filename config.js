@@ -8,7 +8,7 @@ const APP_CONFIG = {
     // - For local development: 'http://localhost:3000'
     // - For production: 'https://your-server.com'
     // - For GitHub Pages (static): null
-    BACKEND_URL: 'http://localhost:3001',
+    BACKEND_URL: null,  // Set to null for GitHub Pages (static mode)
     
     // Default profile when running in static mode
     DEFAULT_PROFILE: 'tech',
