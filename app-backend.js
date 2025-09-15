@@ -29,6 +29,15 @@ let votedUsers = {};  // Track who voted for what
 function getProfileFromURL() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(window.location.search);
+    const pathParts = window.location.pathname.split('/');
+    const voteIndex = pathParts.indexOf('vote');
+    
+    // Check URL path first (for /vote/profilename)
+    if (voteIndex !== -1 && pathParts[voteIndex + 1]) {
+        return pathParts[voteIndex + 1];
+    }
+    
+    // Then check hash or query params
     return hash || params.get('profile') || APP_CONFIG.DEFAULT_PROFILE || 'tech';
 }
 
