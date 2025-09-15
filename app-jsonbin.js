@@ -463,9 +463,8 @@ function updateModeIndicator() {
         indicator.textContent = '🟢 Live Mode (Real-time Backend)';
         indicator.className = 'mode-indicator backend';
     } else if (isJSONBinMode) {
-        indicator.textContent = '🌐 JSONBin Mode (Shared Storage)';
+        indicator.textContent = '🟢 Connected to Backend';
         indicator.className = 'mode-indicator backend';
-        indicator.style.background = 'rgba(102, 126, 234, 0.3)';
     } else {
         indicator.textContent = '🟡 Static Mode (Local Storage)';
         indicator.className = 'mode-indicator static';
@@ -703,7 +702,7 @@ async function initApp() {
         
         setTimeout(() => {
             if (isJSONBinMode) {
-                showStatus('🌐 Connected to JSONBin - All votes are shared!', 4000);
+                showStatus('✅ Connected to Backend - All votes are synced!', 4000);
             } else {
                 showStatus('🚀 Ready to vote!', 3000);
             }
