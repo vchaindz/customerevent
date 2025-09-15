@@ -96,7 +96,8 @@ async function loadJSONBinData(binId) {
         const response = await fetch(`${APP_CONFIG.JSONBIN_BASE_URL}/b/${binId}/latest`, {
             method: 'GET',
             headers: {
-                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY
+                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY,
+                'X-Access-Key': APP_CONFIG.JSONBIN_API_KEY  // Also send as Access Key for custom keys
             }
         });
         
@@ -120,7 +121,8 @@ async function updateJSONBinData(binId, data) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY
+                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY,
+                'X-Access-Key': APP_CONFIG.JSONBIN_API_KEY  // Also try as Access Key
             },
             body: JSON.stringify(data)
         });

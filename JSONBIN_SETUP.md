@@ -8,7 +8,11 @@ This app supports JSONBin.io for shared voting storage that works on GitHub Page
 1. Go to [JSONBin.io](https://jsonbin.io/)
 2. Sign up for a free account
 3. Go to the API Keys section in your dashboard
-4. Copy your **X-Master-Key** (it should look like: `$2b$10$...` or similar)
+4. You need the **X-Master-Key** (NOT a regular API key):
+   - The X-Master-Key is shown at the top of the API Keys page
+   - It starts with `$2b$10$` or `$2a$10$`
+   - This is different from the API keys you create
+   - The X-Master-Key has full access to create/update bins
 
 ### 2. Configure the App
 Edit `config.js` and update:
