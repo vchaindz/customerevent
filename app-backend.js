@@ -11,7 +11,7 @@ let socket = null;
 let isBackendMode = false;
 let isBackendStorageMode = false;
 let currentProfile = null;
-let jsonBinPollInterval = null;
+let backendPollInterval = null;
 let currentBinId = null;
 
 const COLORS = [
@@ -51,7 +51,7 @@ async function checkBackendAvailability() {
 }
 
 // Backend API Functions
-async function createJSONBinStorage(profile) {
+async function createBackendStorage(profile) {
     const initialData = {
         profile: profile,
         description: `Vote for Best ${profile.charAt(0).toUpperCase() + profile.slice(1)}`,
@@ -84,12 +84,12 @@ async function createJSONBinStorage(profile) {
             return data.metadata.id;
         }
     } catch (error) {
-        console.error('Failed to create JSONBin:', error);
+        console.error('Failed to create backend storage:', error);
     }
     return null;
 }
 
-async function loadJSONBinData(binId) {
+async function loadBackendData(binId) {
     if (!binId) return null;
     
     try {
@@ -106,12 +106,12 @@ async function loadJSONBinData(binId) {
             return data.record;
         }
     } catch (error) {
-        console.error('Failed to load JSONBin data:', error);
+        console.error('Failed to load backend data:', error);
     }
     return null;
 }
 
-async function updateJSONBinData(binId, data) {
+async function updateBackendData(binId, data) {
     if (!binId) return false;
     
     data.lastUpdated = new Date().toISOString();
@@ -129,7 +129,7 @@ async function updateJSONBinData(binId, data) {
         
         return response.ok;
     } catch (error) {
-        console.error('Failed to update JSONBin:', error);
+        console.error('Failed to update backend:', error);
         return false;
     }
 }
@@ -171,20 +171,20 @@ async function loadConfig() {
             console.error('Failed to load from backend:', error);
         }
     } else if (isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
-        // Load from JSONBin
+        // Load from backend storage
         currentBinId = APP_CONFIG.JSONBIN_BINS[profile];
         
         if (!currentBinId) {
             // Create new bin if doesn't exist
-            currentBinId = await createJSONBinStorage(profile);
+            currentBinId = await createBackendStorage(profile);
             if (currentBinId) {
-                console.log(`Created new JSONBin for ${profile}: ${currentBinId}`);
+                console.log(`Created new backend storage for ${profile}: ${currentBinId}`);
                 // Update config with new bin ID
                 APP_CONFIG.JSONBIN_BINS[profile] = currentBinId;
             }
         }
         
-        const binData = await loadJSONBinData(currentBinId);
+        const binData = await loadBackendData(currentBinId);
         if (binData) {
             CONFIG = {
                 description: binData.description,
@@ -222,17 +222,17 @@ async function loadConfig() {
     return CONFIG;
 }
 
-// Start polling JSONBin for updates
-function startJSONBinPolling() {
+// Start polling backend for updates
+function startBackendPolling() {
     if (!isBackendStorageMode || !currentBinId) return;
     
     // Clear existing interval
-    if (jsonBinPollInterval) {
-        clearInterval(jsonBinPollInterval);
+    if (backendPollInterval) {
+        clearInterval(backendPollInterval);
     }
     
-    jsonBinPollInterval = setInterval(async () => {
-        const binData = await loadJSONBinData(currentBinId);
+    backendPollInterval = setInterval(async () => {
+        const binData = await loadBackendData(currentBinId);
         if (binData) {
             let hasChanges = false;
             
@@ -365,8 +365,8 @@ async function vote(item) {
             return;
         }
     } else if (isBackendStorageMode && currentBinId) {
-        // JSONBin mode
-        const binData = await loadJSONBinData(currentBinId);
+        // Backend storage mode
+        const binData = await loadBackendData(currentBinId);
         if (binData) {
             // Update votes
             if (previousVote && binData.votes[previousVote] > 0) {
@@ -378,8 +378,8 @@ async function vote(item) {
             binData.voters = binData.voters || {};
             binData.voters[userFingerprint] = item;
             
-            // Save to JSONBin
-            const success = await updateJSONBinData(currentBinId, binData);
+            // Save to backend
+            const success = await updateBackendData(currentBinId, binData);
             
             if (success) {
                 CONFIG.votes = binData.votes;
@@ -662,10 +662,10 @@ async function initApp() {
         // Check backend availability
         isBackendMode = await checkBackendAvailability();
         
-        // If no backend, use JSONBin if configured
+        // If no primary backend, use secondary backend if configured
         if (!isBackendMode && APP_CONFIG.JSONBIN_MODE && APP_CONFIG.JSONBIN_API_KEY) {
             isBackendStorageMode = true;
-            console.log('Using JSONBin mode for shared storage');
+            console.log('Using backend storage for shared voting');
         }
         
         updateModeIndicator();
@@ -690,7 +690,7 @@ async function initApp() {
         if (isBackendMode) {
             initSocket();
         } else if (isBackendStorageMode) {
-            startJSONBinPolling();
+            startBackendPolling();
         }
         
         // Initialize UI
