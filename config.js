@@ -7,15 +7,15 @@ const APP_CONFIG = {
     BACKEND_URL: null,
     
     // JSONBin configuration - enables shared voting on GitHub Pages!
-    JSONBIN_MODE: false,  // Set to true when you have JSONBin configured
-    JSONBIN_API_KEY: 'YOUR_JSONBIN_X_MASTER_KEY_HERE',  // Your JSONBin.io X-Master-Key (starts with $2b$10$)
+    JSONBIN_MODE: true,  // JSONBin is now enabled!
+    JSONBIN_API_KEY: '$2a$10$d5csxfBvkFf6kUNZicShX.eK17pWhq6e3XN.QbZBj2WDx6hrilr9m',
     JSONBIN_BASE_URL: 'https://api.jsonbin.io/v3',
     
-    // JSONBin bin IDs for each profile (will be created automatically if not set)
+    // JSONBin bin IDs for each profile
     JSONBIN_BINS: {
-        tech: null,     // Will be created on first use
-        movies: null,   // Will be created on first use  
-        food: null      // Will be created on first use
+        tech: '68c80246ae596e708fef591c',     // Tech voting bin
+        movies: '68c8025a43b1c97be9439cdd',   // Movies voting bin  
+        food: '68c8026dd0ea881f407e8a99'      // Food voting bin
     },
     
     // Default profile
