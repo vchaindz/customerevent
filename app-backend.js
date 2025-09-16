@@ -807,3 +807,12 @@ window.vote = vote;
 
 // Start app when DOM is loaded
 window.addEventListener('DOMContentLoaded', initApp);
+
+// Reload when hash changes (for profile navigation)
+window.addEventListener('hashchange', () => {
+    const newProfile = getProfileFromURL();
+    if (newProfile && newProfile !== currentProfile) {
+        // Profile changed, reload the page
+        window.location.reload();
+    }
+});
