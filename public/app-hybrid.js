@@ -93,7 +93,7 @@ async function loadConfig() {
 async function loadStaticConfig(profile) {
     const configs = {
         tech: {
-            description: "Vote for Most Important Technologies 2000-2025",
+            description: "Vote for Most Important Technology 2000-2025",
             items: ["64bit", "Virtualization", "Cloud computing", "LLMs", "AI in datacenter Ops", "TCP/IP"],
             votes: {}
         },

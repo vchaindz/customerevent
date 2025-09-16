@@ -10,7 +10,7 @@ Go to https://jsonbin.io/app/bins and create 3 new bins with this exact content:
 ```json
 {
   "profile": "tech",
-  "description": "Vote for Most Important Technologies 2000-2025",
+  "description": "Vote for Most Important Technology 2000-2025",
   "items": ["64bit", "Virtualization", "Cloud computing", "LLMs", "AI in datacenter Ops", "TCP/IP"],
   "votes": {
     "64bit": 0,
