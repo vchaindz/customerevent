@@ -25,8 +25,30 @@ let audioEnabled = true;
 let waterDropSound = null;
 let votedUsers = {};  // Track who voted for what
 
+// Show error message
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #ff4444;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        font-size: 18px;
+        text-align: center;
+        z-index: 10000;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    `;
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+}
+
 // Get profile from URL or use default
-function getProfileFromURL() {
+async function getProfileFromURL() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(window.location.search);
     const pathParts = window.location.pathname.split('/');
@@ -35,6 +57,16 @@ function getProfileFromURL() {
     // Check URL path first (for /vote/profilename)
     if (voteIndex !== -1 && pathParts[voteIndex + 1]) {
         return pathParts[voteIndex + 1];
+    }
+    
+    // If no profile specified, load dynamic profiles to get main profile
+    if (!hash && !params.get('profile')) {
+        if (APP_CONFIG.JSONBIN_MODE) {
+            const profiles = await loadDynamicProfiles();
+            if (profiles && profiles.mainProfile) {
+                return profiles.mainProfile;
+            }
+        }
     }
     
     // Then check hash or query params
@@ -152,9 +184,41 @@ function getDefaultItems(profile) {
     return defaults[profile] || defaults.tech;
 }
 
+// Load profiles from master list
+async function loadDynamicProfiles() {
+    const MASTER_PROFILES_BIN = '68c8f57dd0ea881f407f7642';
+    
+    try {
+        const response = await fetch(`${APP_CONFIG.JSONBIN_BASE_URL}/b/${MASTER_PROFILES_BIN}/latest`, {
+            headers: {
+                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const profilesList = data.record || { profiles: {}, mainProfile: 'tech' };
+            
+            // Merge dynamic profiles with existing ones
+            Object.assign(APP_CONFIG.JSONBIN_BINS, profilesList.profiles);
+            
+            // Store main profile
+            APP_CONFIG.MAIN_PROFILE = profilesList.mainProfile || 'tech';
+            
+            console.log('Loaded dynamic profiles:', Object.keys(profilesList.profiles));
+            console.log('Main profile:', APP_CONFIG.MAIN_PROFILE);
+            
+            return profilesList;
+        }
+    } catch (error) {
+        console.error('Failed to load dynamic profiles:', error);
+    }
+    return null;
+}
+
 // Load configuration (backend, JSONBin, or static)
 async function loadConfig() {
-    const profile = getProfileFromURL();
+    const profile = await getProfileFromURL();
     currentProfile = profile;
     
     if (isBackendMode) {
@@ -180,17 +244,16 @@ async function loadConfig() {
             console.error('Failed to load from backend:', error);
         }
     } else if (isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
+        // Load dynamic profiles first
+        await loadDynamicProfiles();
+        
         // Load from backend storage
         currentBinId = APP_CONFIG.JSONBIN_BINS[profile];
         
         if (!currentBinId) {
-            // Create new bin if doesn't exist
-            currentBinId = await createBackendStorage(profile);
-            if (currentBinId) {
-                console.log(`Created new backend storage for ${profile}: ${currentBinId}`);
-                // Update config with new bin ID
-                APP_CONFIG.JSONBIN_BINS[profile] = currentBinId;
-            }
+            // Profile doesn't exist
+            showError(`Profile "${profile}" not found. Please contact the administrator.`);
+            return null;
         }
         
         const binData = await loadBackendData(currentBinId);

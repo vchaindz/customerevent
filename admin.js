@@ -197,13 +197,13 @@ async function createProfile() {
             document.getElementById('newProfileDesc').value = '';
             document.getElementById('newProfileItems').value = '';
             
-            showStatus(`Profile "${name}" created successfully! Access at: /vote/${name} or #${name}`, 'success');
+            // Store in master profiles list
+            await updateMasterProfilesList(name, binId);
+            
+            showStatus(`Profile "${name}" created successfully! Access at: #${name}`, 'success');
             
             // Reload profiles
             loadProfiles();
-            
-            // Show how to update config.js
-            showConfigUpdateInstructions(name, binId);
         } else {
             throw new Error('Failed to create bin');
         }
@@ -213,21 +213,64 @@ async function createProfile() {
     }
 }
 
-// Show config update instructions
-function showConfigUpdateInstructions(name, binId) {
-    const message = `
-        <strong>Important:</strong> To make this profile permanent, update config.js:<br>
-        <pre style="background: #f4f4f4; padding: 10px; margin-top: 10px; border-radius: 5px;">
-JSONBIN_BINS: {
-    ...
-    ${name}: '${binId}'
-}</pre>
-    `;
+// Update master profiles list
+async function updateMasterProfilesList(name, binId, setAsMain = false) {
+    const MASTER_PROFILES_BIN = '68c8f57dd0ea881f407f7642'; // Master profiles list bin
     
-    const statusEl = document.getElementById('globalStatus');
-    statusEl.innerHTML = message;
-    statusEl.className = 'status-message status-info';
-    statusEl.style.display = 'block';
+    try {
+        // Get current profiles list
+        const response = await fetch(`${APP_CONFIG.JSONBIN_BASE_URL}/b/${MASTER_PROFILES_BIN}/latest`, {
+            headers: {
+                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY
+            }
+        });
+        
+        let profilesList = { profiles: {}, mainProfile: 'tech' };
+        if (response.ok) {
+            const data = await response.json();
+            profilesList = data.record || { profiles: {}, mainProfile: 'tech' };
+        }
+        
+        // Add new profile if binId provided
+        if (binId) {
+            profilesList.profiles[name] = binId;
+        }
+        
+        // Set as main profile if requested
+        if (setAsMain) {
+            profilesList.mainProfile = name;
+        }
+        
+        profilesList.lastUpdated = new Date().toISOString();
+        
+        // Update master list
+        await fetch(`${APP_CONFIG.JSONBIN_BASE_URL}/b/${MASTER_PROFILES_BIN}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY
+            },
+            body: JSON.stringify(profilesList)
+        });
+        
+        // Update local config
+        if (binId) {
+            APP_CONFIG.JSONBIN_BINS[name] = binId;
+        }
+    } catch (error) {
+        console.error('Failed to update master profiles list:', error);
+    }
+}
+
+// Set profile as main
+async function setAsMainProfile(profileName) {
+    try {
+        await updateMasterProfilesList(profileName, null, true);
+        showStatus(`Profile "${profileName}" set as main profile! It will load by default on the homepage.`, 'success');
+    } catch (error) {
+        console.error('Failed to set main profile:', error);
+        showStatus('Failed to set main profile', 'error');
+    }
 }
 
 // Load profile data for editing
@@ -258,6 +301,7 @@ function loadProfileData() {
             <button class="btn btn-primary" onclick="editProfile('${profileName}')">✏️ Edit Topics</button>
             <button class="btn btn-danger" onclick="resetVotes('${profileName}')">🗑️ Reset Votes</button>
             <button class="btn btn-success" onclick="viewProfile('${profileName}')">👁️ View Live</button>
+            <button class="btn btn-info" onclick="setAsMainProfile('${profileName}')">⭐ Set as Main</button>
             <button class="btn btn-warning" onclick="exportProfile('${profileName}')">💾 Export Data</button>
         </div>
     `;
@@ -401,7 +445,9 @@ async function resetVotes(profileName) {
 
 // View profile
 function viewProfile(profileName) {
-    window.open(`/vote/${profileName}`, '_blank');
+    // Use hash route for GitHub Pages compatibility
+    const baseUrl = window.location.origin + window.location.pathname.replace('/admin.html', '');
+    window.open(`${baseUrl}#${profileName}`, '_blank');
 }
 
 // Export profile data
