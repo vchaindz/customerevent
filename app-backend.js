@@ -248,22 +248,11 @@ async function loadConfig() {
             console.error('Failed to load from backend:', error);
         }
     } else if (isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
-        // Parallel loading: Load dynamic profiles and profile data simultaneously
-        let profilesPromise = null;
-        let binId = APP_CONFIG.JSONBIN_BINS[profile];
+        // ALWAYS load dynamic profiles first to get all available profiles including new ones
+        await loadDynamicProfiles();
         
-        // Only load dynamic profiles if needed
-        if (!profile || !binId) {
-            profilesPromise = loadDynamicProfiles();
-        }
-        
-        // If we have a profile but no binId, wait for profiles to load first
-        if (profile && !binId && profilesPromise) {
-            const profiles = await profilesPromise;
-            binId = APP_CONFIG.JSONBIN_BINS[profile];
-            profilesPromise = null; // Clear since we already awaited
-        }
-        
+        // Now check if the profile exists
+        const binId = APP_CONFIG.JSONBIN_BINS[profile];
         currentBinId = binId;
         
         if (!currentBinId) {
@@ -272,13 +261,8 @@ async function loadConfig() {
             return null;
         }
         
-        // Load profile data (and profiles if still needed) in parallel
-        const promises = [loadBackendData(currentBinId)];
-        if (profilesPromise) {
-            promises.push(profilesPromise);
-        }
-        
-        const [binData] = await Promise.all(promises);
+        // Load profile data
+        const binData = await loadBackendData(currentBinId);
         
         if (binData) {
             CONFIG = {
