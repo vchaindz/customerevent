@@ -459,7 +459,8 @@ async function vote(item) {
         userCurrentVote = item;
         
         // Update display immediately for instant feedback
-        updateDisplay();
+        renderVotingArena();
+        renderLeaderboard();
         
         // Step 2: Send to server in background
         // Create the updated data based on current state (not fresh load)
@@ -484,7 +485,8 @@ async function vote(item) {
                 CONFIG.votes = oldVotes;
                 userVoted = oldUserVoted;
                 userCurrentVote = oldUserCurrentVote;
-                updateDisplay();
+                renderVotingArena();
+                renderLeaderboard();
                 showStatus('❌ Failed to save vote. Please try again.', 3000);
             }
         }).catch(error => {
@@ -493,7 +495,8 @@ async function vote(item) {
             CONFIG.votes = oldVotes;
             userVoted = oldUserVoted;
             userCurrentVote = oldUserCurrentVote;
-            updateDisplay();
+            renderVotingArena();
+            renderLeaderboard();
             showStatus('❌ Failed to save vote. Please try again.', 3000);
         });
     } else {
