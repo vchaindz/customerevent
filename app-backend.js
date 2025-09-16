@@ -448,6 +448,9 @@ async function vote(item) {
         
         // Step 1: Update UI immediately (optimistic update)
         const oldVotes = {...CONFIG.votes};
+        const oldUserVoted = userVoted;
+        const oldUserCurrentVote = userCurrentVote;
+        
         if (previousVote && CONFIG.votes[previousVote] > 0) {
             CONFIG.votes[previousVote]--;
         }
@@ -459,41 +462,40 @@ async function vote(item) {
         updateDisplay();
         
         // Step 2: Send to server in background
-        const binData = await loadBackendData(currentBinId);
-        if (binData) {
-            // Update server data
-            if (previousVote && binData.votes[previousVote] > 0) {
-                binData.votes[previousVote]--;
+        // Create the updated data based on current state (not fresh load)
+        const updatedData = {
+            profile: currentProfile,
+            description: CONFIG.description,
+            items: CONFIG.items,
+            votes: {...CONFIG.votes}, // Use the already updated votes
+            voters: {...votedUsers}    // Copy current voters
+        };
+        
+        // Update voters
+        updatedData.voters[userFingerprint] = item;
+        
+        // Save to backend asynchronously
+        updateBackendData(currentBinId, updatedData).then(success => {
+            if (success) {
+                // Success - keep the optimistic update
+                votedUsers = updatedData.voters;
+            } else {
+                // Failed - rollback the optimistic update
+                CONFIG.votes = oldVotes;
+                userVoted = oldUserVoted;
+                userCurrentVote = oldUserCurrentVote;
+                updateDisplay();
+                showStatus('❌ Failed to save vote. Please try again.', 3000);
             }
-            binData.votes[item] = (binData.votes[item] || 0) + 1;
-            
-            // Update voters
-            binData.voters = binData.voters || {};
-            binData.voters[userFingerprint] = item;
-            
-            // Save to backend asynchronously
-            updateBackendData(currentBinId, binData).then(success => {
-                if (success) {
-                    // Success - keep the optimistic update
-                    votedUsers = binData.voters;
-                } else {
-                    // Failed - rollback the optimistic update
-                    CONFIG.votes = oldVotes;
-                    userVoted = previousVote ? true : false;
-                    userCurrentVote = previousVote;
-                    updateDisplay();
-                    showStatus('❌ Failed to save vote. Please try again.', 3000);
-                }
-            });
-        } else {
-            // Couldn't load data - rollback
+        }).catch(error => {
+            // Error - rollback the optimistic update
+            console.error('Vote update error:', error);
             CONFIG.votes = oldVotes;
-            userVoted = previousVote ? true : false;
-            userCurrentVote = previousVote;
+            userVoted = oldUserVoted;
+            userCurrentVote = oldUserCurrentVote;
             updateDisplay();
-            showStatus('❌ Failed to connect. Please try again.', 3000);
-            return;
-        }
+            showStatus('❌ Failed to save vote. Please try again.', 3000);
+        });
     } else {
         // Static mode (localStorage only)
         if (previousVote && CONFIG.votes[previousVote] > 0) {
