@@ -248,13 +248,23 @@ async function loadConfig() {
             console.error('Failed to load from backend:', error);
         }
     } else if (isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
-        // Always load dynamic profiles to get latest list
-        if (!profile || !APP_CONFIG.JSONBIN_BINS[profile]) {
-            await loadDynamicProfiles();
+        // Parallel loading: Load dynamic profiles and profile data simultaneously
+        let profilesPromise = null;
+        let binId = APP_CONFIG.JSONBIN_BINS[profile];
+        
+        // Only load dynamic profiles if needed
+        if (!profile || !binId) {
+            profilesPromise = loadDynamicProfiles();
         }
         
-        // Load from backend storage
-        currentBinId = APP_CONFIG.JSONBIN_BINS[profile];
+        // If we have a profile but no binId, wait for profiles to load first
+        if (profile && !binId && profilesPromise) {
+            const profiles = await profilesPromise;
+            binId = APP_CONFIG.JSONBIN_BINS[profile];
+            profilesPromise = null; // Clear since we already awaited
+        }
+        
+        currentBinId = binId;
         
         if (!currentBinId) {
             // Profile doesn't exist
@@ -262,7 +272,14 @@ async function loadConfig() {
             return null;
         }
         
-        const binData = await loadBackendData(currentBinId);
+        // Load profile data (and profiles if still needed) in parallel
+        const promises = [loadBackendData(currentBinId)];
+        if (profilesPromise) {
+            promises.push(profilesPromise);
+        }
+        
+        const [binData] = await Promise.all(promises);
+        
         if (binData) {
             CONFIG = {
                 description: binData.description,
@@ -443,10 +460,24 @@ async function vote(item) {
             return;
         }
     } else if (isBackendStorageMode && currentBinId) {
-        // Backend storage mode
+        // Backend storage mode with OPTIMISTIC UI UPDATES
+        
+        // Step 1: Update UI immediately (optimistic update)
+        const oldVotes = {...CONFIG.votes};
+        if (previousVote && CONFIG.votes[previousVote] > 0) {
+            CONFIG.votes[previousVote]--;
+        }
+        CONFIG.votes[item] = (CONFIG.votes[item] || 0) + 1;
+        userVoted = true;
+        userCurrentVote = item;
+        
+        // Update display immediately for instant feedback
+        updateDisplay();
+        
+        // Step 2: Send to server in background
         const binData = await loadBackendData(currentBinId);
         if (binData) {
-            // Update votes
+            // Update server data
             if (previousVote && binData.votes[previousVote] > 0) {
                 binData.votes[previousVote]--;
             }
@@ -456,18 +487,28 @@ async function vote(item) {
             binData.voters = binData.voters || {};
             binData.voters[userFingerprint] = item;
             
-            // Save to backend
-            const success = await updateBackendData(currentBinId, binData);
-            
-            if (success) {
-                CONFIG.votes = binData.votes;
-                votedUsers = binData.voters;
-                userVoted = true;
-                userCurrentVote = item;
-            } else {
-                showStatus('❌ Failed to save vote. Please try again.', 3000);
-                return;
-            }
+            // Save to backend asynchronously
+            updateBackendData(currentBinId, binData).then(success => {
+                if (success) {
+                    // Success - keep the optimistic update
+                    votedUsers = binData.voters;
+                } else {
+                    // Failed - rollback the optimistic update
+                    CONFIG.votes = oldVotes;
+                    userVoted = previousVote ? true : false;
+                    userCurrentVote = previousVote;
+                    updateDisplay();
+                    showStatus('❌ Failed to save vote. Please try again.', 3000);
+                }
+            });
+        } else {
+            // Couldn't load data - rollback
+            CONFIG.votes = oldVotes;
+            userVoted = previousVote ? true : false;
+            userCurrentVote = previousVote;
+            updateDisplay();
+            showStatus('❌ Failed to connect. Please try again.', 3000);
+            return;
         }
     } else {
         // Static mode (localStorage only)
@@ -785,6 +826,22 @@ async function initApp() {
                 showStatus('🚀 Ready to vote!', 3000);
             }
         }, 2000);
+        
+        // Preload other common profiles in background for faster switching
+        if (isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
+            setTimeout(() => {
+                const commonProfiles = ['tech', 'movies', 'food'];
+                commonProfiles.forEach(profile => {
+                    if (profile !== currentProfile && APP_CONFIG.JSONBIN_BINS[profile]) {
+                        // Preload in background - don't await, just cache
+                        loadBackendData(APP_CONFIG.JSONBIN_BINS[profile]).catch(() => {
+                            // Ignore errors in preloading
+                        });
+                    }
+                });
+                console.log('Preloading common profiles in background...');
+            }, 3000); // Wait 3 seconds after initial load
+        }
         
         // Enable audio on first click
         document.addEventListener('click', () => {
