@@ -48,7 +48,7 @@ function showError(message) {
 }
 
 // Get profile from URL or use default
-async function getProfileFromURL() {
+function getProfileFromURL() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(window.location.search);
     const pathParts = window.location.pathname.split('/');
@@ -59,18 +59,9 @@ async function getProfileFromURL() {
         return pathParts[voteIndex + 1];
     }
     
-    // If no profile specified, load dynamic profiles to get main profile
-    if (!hash && !params.get('profile')) {
-        if (APP_CONFIG.JSONBIN_MODE) {
-            const profiles = await loadDynamicProfiles();
-            if (profiles && profiles.mainProfile) {
-                return profiles.mainProfile;
-            }
-        }
-    }
-    
     // Then check hash or query params
-    return hash || params.get('profile') || APP_CONFIG.DEFAULT_PROFILE || 'tech';
+    // If none specified, will use main profile loaded dynamically later
+    return hash || params.get('profile') || '';
 }
 
 // Check if backend is available
@@ -218,7 +209,20 @@ async function loadDynamicProfiles() {
 
 // Load configuration (backend, JSONBin, or static)
 async function loadConfig() {
-    const profile = await getProfileFromURL();
+    let profile = getProfileFromURL();
+    
+    // If no profile specified and using JSONBin mode, get main profile
+    if (!profile && isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
+        const profiles = await loadDynamicProfiles();
+        if (profiles && profiles.mainProfile) {
+            profile = profiles.mainProfile;
+        } else {
+            profile = APP_CONFIG.DEFAULT_PROFILE || 'tech';
+        }
+    } else if (!profile) {
+        profile = APP_CONFIG.DEFAULT_PROFILE || 'tech';
+    }
+    
     currentProfile = profile;
     
     if (isBackendMode) {
@@ -244,8 +248,10 @@ async function loadConfig() {
             console.error('Failed to load from backend:', error);
         }
     } else if (isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
-        // Load dynamic profiles first
-        await loadDynamicProfiles();
+        // Always load dynamic profiles to get latest list
+        if (!profile || !APP_CONFIG.JSONBIN_BINS[profile]) {
+            await loadDynamicProfiles();
+        }
         
         // Load from backend storage
         currentBinId = APP_CONFIG.JSONBIN_BINS[profile];
