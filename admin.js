@@ -446,7 +446,7 @@ async function resetVotes(profileName) {
 // View profile
 function viewProfile(profileName) {
     // Use hash route for GitHub Pages compatibility
-    const baseUrl = window.location.origin + window.location.pathname.replace('/admin.html', '');
+    const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
     window.open(`${baseUrl}#${profileName}`, '_blank');
 }
 
