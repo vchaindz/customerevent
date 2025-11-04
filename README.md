@@ -24,7 +24,7 @@ A real-time voting application for technology polls (2000-2025) with live update
 Embed live-updating voting stats in presentations:
 
 ```
-https://raw.githubusercontent.com/vchaindz/customerevent/main/stats/leaderboard.png
+https://event.codenotary.io/stats/leaderboard.png
 ```
 
 ### How It Works

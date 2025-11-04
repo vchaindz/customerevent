@@ -7,7 +7,7 @@ This directory contains the auto-generated PNG image of the voting leaderboard, 
 Use this URL to embed the live-updating stats image in PowerPoint:
 
 ```
-https://raw.githubusercontent.com/vchaindz/customerevent/main/stats/leaderboard.png
+https://event.codenotary.io/stats/leaderboard.png
 ```
 
 ## How It Works
