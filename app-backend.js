@@ -15,7 +15,7 @@ let backendPollInterval = null;
 let currentBinId = null;
 
 const COLORS = [
-    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'
+    '#4ecdc4', '#45b7d1', '#96ceb4', '#7fb3d5', '#89c4f4', '#6ab7c8'
 ];
 
 let userVoted = false;
