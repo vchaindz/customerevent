@@ -1,0 +1,12 @@
+{
+  "name": "stats-generator",
+  "version": "1.0.0",
+  "description": "Generate stats PNG for PowerPoint embedding",
+  "main": "generate-stats-image.js",
+  "scripts": {
+    "generate": "node generate-stats-image.js"
+  },
+  "dependencies": {
+    "puppeteer": "^21.6.1"
+  }
+}
