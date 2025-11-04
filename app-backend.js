@@ -816,19 +816,22 @@ async function initApp() {
             }
         }, 2000);
         
-        // Preload other common profiles in background for faster switching
+        // Preload other profiles in background for faster switching
         if (isBackendStorageMode && APP_CONFIG.JSONBIN_MODE) {
             setTimeout(() => {
-                const commonProfiles = ['tech', 'movies', 'food'];
-                commonProfiles.forEach(profile => {
+                // Use actual dynamic profiles instead of hardcoded list
+                const availableProfiles = Object.keys(APP_CONFIG.JSONBIN_BINS);
+                availableProfiles.forEach(profile => {
                     if (profile !== currentProfile && APP_CONFIG.JSONBIN_BINS[profile]) {
                         // Preload in background - don't await, just cache
                         loadBackendData(APP_CONFIG.JSONBIN_BINS[profile]).catch(() => {
-                            // Ignore errors in preloading
+                            // Silently ignore errors in preloading
                         });
                     }
                 });
-                console.log('Preloading common profiles in background...');
+                if (availableProfiles.length > 1) {
+                    console.log('Preloading profiles in background:', availableProfiles.filter(p => p !== currentProfile).join(', '));
+                }
             }, 3000); // Wait 3 seconds after initial load
         }
         

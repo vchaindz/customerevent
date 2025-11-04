@@ -144,99 +144,6 @@
             max-width: 200px;
         }
 
-        .timelapse-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .timelapse-button {
-            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(78, 205, 196, 0.4);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .timelapse-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.6);
-        }
-
-        .timelapse-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .timelapse-button.playing {
-            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-        }
-
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 15px;
-            color: white;
-            font-size: 0.85em;
-        }
-
-        .speed-button {
-            background: rgba(255, 255, 255, 0.3);
-            border: none;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.85em;
-            transition: all 0.2s ease;
-        }
-
-        .speed-button:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .speed-button.active {
-            background: #4ecdc4;
-            font-weight: bold;
-        }
-
-        .timelapse-indicator {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(78, 205, 196, 0.95);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            z-index: 1000;
-            animation: pulse 1.5s ease-in-out infinite;
-            display: none;
-        }
-
-        .timelapse-indicator.show {
-            display: block;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
-            50% { opacity: 0.8; transform: translateX(-50%) scale(1.05); }
-        }
 
         .title {
             font-size: 2.5em;
@@ -679,15 +586,6 @@
                 display: none !important;
             }
 
-            /* Hide timelapse controls on mobile */
-            .timelapse-controls {
-                display: none !important;
-            }
-
-            .timelapse-indicator {
-                display: none !important;
-            }
-
             .main-content {
                 flex-direction: column;
                 padding: 0 10px 10px;
@@ -835,7 +733,7 @@
             .title { font-size: 1.8em; }
             .subtitle { font-size: 1em; }
 
-            /* QR and timelapse already hidden in 768px breakpoint */
+            /* QR already hidden in 768px breakpoint */
 
             .main-content {
                 padding: 0 5px 5px;
@@ -933,18 +831,6 @@
                     <p class="qr-url">event.codenotary.io</p>
                 </div>
             </div>
-            <div class="timelapse-controls">
-                <button class="timelapse-button" id="timelapseButton" onclick="toggleTimelapse()">
-                    <span id="timelapseIcon">▶️</span>
-                    <span id="timelapseText">Play Time Lapse</span>
-                </button>
-                <div class="speed-control">
-                    <span>Speed:</span>
-                    <button class="speed-button active" onclick="setTimelapseSpeed(1)" id="speed1x">1x</button>
-                    <button class="speed-button" onclick="setTimelapseSpeed(2)" id="speed2x">2x</button>
-                    <button class="speed-button" onclick="setTimelapseSpeed(4)" id="speed4x">4x</button>
-                </div>
-            </div>
         </div>
 
         <div class="main-content">
@@ -962,8 +848,7 @@
     </div>
 
     <div class="status-message" id="statusMessage"></div>
-    <div class="timelapse-indicator" id="timelapseIndicator">⏱️ Time Lapse Playing...</div>
-    
+
     <div class="codenotary-logo">
         <a href="https://www.codenotary.com" target="_blank" rel="noopener noreferrer">
             <img src="https://codenotary.com/hubfs/chub_backup/Codenotary-logo-white-1.png" alt="Codenotary" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA4MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHRleHQgeD0iNDAiIHk9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTAiIGZpbGw9IiMzMzMiPkNvZGVub3Rhcnk8L3RleHQ+Cjwvc3ZnPg=='" />
@@ -983,161 +868,6 @@
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
             });
-        });
-
-        // Time Lapse Feature
-        let timelapseActive = false;
-        let timelapseInterval = null;
-        let timelapseSpeed = 1;
-        let originalVotes = {};
-        let timelapseProgress = 0;
-
-        function toggleTimelapse() {
-            const button = document.getElementById('timelapseButton');
-            const icon = document.getElementById('timelapseIcon');
-            const text = document.getElementById('timelapseText');
-            const indicator = document.getElementById('timelapseIndicator');
-
-            if (timelapseActive) {
-                // Stop timelapse
-                stopTimelapse();
-                button.classList.remove('playing');
-                icon.textContent = '▶️';
-                text.textContent = 'Play Time Lapse';
-                indicator.classList.remove('show');
-            } else {
-                // Start timelapse
-                startTimelapse();
-                button.classList.add('playing');
-                icon.textContent = '⏸️';
-                text.textContent = 'Pause Time Lapse';
-                indicator.classList.add('show');
-            }
-        }
-
-        function startTimelapse() {
-            timelapseActive = true;
-
-            // Store original vote counts
-            originalVotes = {};
-            Object.keys(CONFIG.votes).forEach(item => {
-                originalVotes[item] = CONFIG.votes[item];
-            });
-
-            // Reset votes to 0
-            Object.keys(CONFIG.votes).forEach(item => {
-                CONFIG.votes[item] = 0;
-            });
-            renderVotingArena();
-            renderLeaderboard();
-            timelapseProgress = 0;
-
-            // Calculate total votes and create animation steps
-            const maxVotes = Math.max(...Object.values(originalVotes));
-            const steps = maxVotes;
-
-            // Animate vote counts incrementally
-            const baseInterval = 100; // Base speed in ms
-            const interval = baseInterval / timelapseSpeed;
-
-            timelapseInterval = setInterval(() => {
-                timelapseProgress++;
-
-                // Increment votes proportionally
-                Object.keys(CONFIG.votes).forEach(item => {
-                    const targetVotes = originalVotes[item];
-                    const progressRatio = timelapseProgress / steps;
-                    const currentVotes = Math.floor(targetVotes * progressRatio);
-
-                    // Add some randomness to make it more realistic
-                    if (Math.random() < (targetVotes - CONFIG.votes[item]) / targetVotes) {
-                        CONFIG.votes[item] = Math.min(currentVotes, targetVotes);
-                    }
-                });
-
-                renderVotingArena();
-                renderLeaderboard();
-
-                // Check if animation is complete
-                const allComplete = Object.keys(CONFIG.votes).every(item =>
-                    CONFIG.votes[item] >= originalVotes[item]
-                );
-
-                if (allComplete || timelapseProgress >= steps * 2) {
-                    // Ensure final values are accurate
-                    Object.keys(CONFIG.votes).forEach(item => {
-                        CONFIG.votes[item] = originalVotes[item];
-                    });
-                    renderVotingArena();
-                    renderLeaderboard();
-                    stopTimelapse();
-
-                    // Reset button state
-                    const button = document.getElementById('timelapseButton');
-                    const icon = document.getElementById('timelapseIcon');
-                    const text = document.getElementById('timelapseText');
-                    const indicator = document.getElementById('timelapseIndicator');
-
-                    button.classList.remove('playing');
-                    icon.textContent = '▶️';
-                    text.textContent = 'Replay Time Lapse';
-                    indicator.classList.remove('show');
-                }
-            }, interval);
-        }
-
-        function stopTimelapse() {
-            timelapseActive = false;
-            if (timelapseInterval) {
-                clearInterval(timelapseInterval);
-                timelapseInterval = null;
-            }
-
-            // Restore original votes
-            if (Object.keys(originalVotes).length > 0) {
-                Object.keys(originalVotes).forEach(item => {
-                    CONFIG.votes[item] = originalVotes[item];
-                });
-                renderVotingArena();
-                renderLeaderboard();
-            }
-        }
-
-        function setTimelapseSpeed(speed) {
-            timelapseSpeed = speed;
-
-            // Update active button
-            document.querySelectorAll('.speed-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(`speed${speed}x`).classList.add('active');
-
-            // If timelapse is active, restart with new speed
-            if (timelapseActive) {
-                const wasPlaying = timelapseActive;
-                stopTimelapse();
-                if (wasPlaying) {
-                    startTimelapse();
-
-                    // Update button state
-                    const button = document.getElementById('timelapseButton');
-                    const icon = document.getElementById('timelapseIcon');
-                    const text = document.getElementById('timelapseText');
-                    const indicator = document.getElementById('timelapseIndicator');
-
-                    button.classList.add('playing');
-                    icon.textContent = '⏸️';
-                    text.textContent = 'Pause Time Lapse';
-                    indicator.classList.add('show');
-                }
-            }
-        }
-
-        // Ensure timelapse stops when page visibility changes
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden && timelapseActive) {
-                toggleTimelapse();
-            }
         });
     </script>
 </body>
