@@ -61,12 +61,29 @@ function showAdminPanel() {
 // Load all profiles
 async function loadProfiles() {
     try {
-        // Load existing profiles from config
-        const existingProfiles = Object.keys(APP_CONFIG.JSONBIN_BINS);
+        // Load dynamic profiles from master list
+        const MASTER_PROFILES_BIN = '68c8f57dd0ea881f407f7642';
+
+        const response = await fetch(`${APP_CONFIG.JSONBIN_BASE_URL}/b/${MASTER_PROFILES_BIN}/latest`, {
+            headers: {
+                'X-Master-Key': APP_CONFIG.JSONBIN_API_KEY
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load master profiles list');
+        }
+
+        const data = await response.json();
+        const profilesList = data.record || { profiles: {}, mainProfile: 'tech' };
+
+        // Merge with existing config
+        Object.assign(APP_CONFIG.JSONBIN_BINS, profilesList.profiles);
+
         const profileSelect = document.getElementById('profileSelect');
         profileSelect.innerHTML = '<option value="">-- Select a profile --</option>';
-        
-        for (const profileName of existingProfiles) {
+
+        for (const profileName of Object.keys(APP_CONFIG.JSONBIN_BINS)) {
             const binId = APP_CONFIG.JSONBIN_BINS[profileName];
             if (binId) {
                 const profileData = await loadProfileFromBackend(binId);
@@ -74,12 +91,13 @@ async function loadProfiles() {
                     profiles[profileName] = profileData;
                     const option = document.createElement('option');
                     option.value = profileName;
-                    option.textContent = `${profileName} (${profileData.items.length} items)`;
+                    const isMain = profileName === profilesList.mainProfile ? ' ★' : '';
+                    option.textContent = `${profileName}${isMain} (${profileData.items.length} items)`;
                     profileSelect.appendChild(option);
                 }
             }
         }
-        
+
         updateProfileList();
     } catch (error) {
         console.error('Failed to load profiles:', error);
