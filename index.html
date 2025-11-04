@@ -1028,7 +1028,8 @@
             Object.keys(CONFIG.votes).forEach(item => {
                 CONFIG.votes[item] = 0;
             });
-            updateDisplay();
+            renderVotingArena();
+            renderLeaderboard();
             timelapseProgress = 0;
 
             // Calculate total votes and create animation steps
@@ -1054,7 +1055,8 @@
                     }
                 });
 
-                updateDisplay();
+                renderVotingArena();
+                renderLeaderboard();
 
                 // Check if animation is complete
                 const allComplete = Object.keys(CONFIG.votes).every(item =>
@@ -1066,7 +1068,8 @@
                     Object.keys(CONFIG.votes).forEach(item => {
                         CONFIG.votes[item] = originalVotes[item];
                     });
-                    updateDisplay();
+                    renderVotingArena();
+                    renderLeaderboard();
                     stopTimelapse();
 
                     // Reset button state
@@ -1095,7 +1098,8 @@
                 Object.keys(originalVotes).forEach(item => {
                     CONFIG.votes[item] = originalVotes[item];
                 });
-                updateDisplay();
+                renderVotingArena();
+                renderLeaderboard();
             }
         }
 
