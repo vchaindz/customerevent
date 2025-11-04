@@ -5,15 +5,43 @@ const path = require('path');
 // Configuration from parent config.js
 const JSONBIN_API_KEY = process.env.JSONBIN_API_KEY || '$2a$10$d5csxfBvkFf6kUNZicShX.eK17pWhq6e3XN.QbZBj2WDx6hrilr9m';
 const JSONBIN_BASE_URL = 'https://api.jsonbin.io/v3';
-const JSONBIN_BIN_ID = '68c80246ae596e708fef591c'; // tech profile
+const MASTER_PROFILES_BIN = '68c8f57dd0ea881f407f7642';
 
 const COLORS = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
 
-async function fetchVotingData() {
+async function getMainProfile() {
+    console.log('Fetching main profile from master list...');
+
+    try {
+        const response = await fetch(`${JSONBIN_BASE_URL}/b/${MASTER_PROFILES_BIN}/latest`, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY,
+                'X-Access-Key': JSONBIN_API_KEY
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Master profiles API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const mainProfile = data.record.mainProfile || 'tech';
+        const binId = data.record.profiles[mainProfile];
+
+        console.log(`Main profile: ${mainProfile}, Bin ID: ${binId}`);
+        return { profile: mainProfile, binId };
+    } catch (error) {
+        console.error('Failed to fetch main profile, defaulting to tech:', error);
+        return { profile: 'tech', binId: '68c80246ae596e708fef591c' };
+    }
+}
+
+async function fetchVotingData(binId) {
     console.log('Fetching voting data from JSONBin...');
 
     try {
-        const response = await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+        const response = await fetch(`${JSONBIN_BASE_URL}/b/${binId}/latest`, {
             method: 'GET',
             headers: {
                 'X-Master-Key': JSONBIN_API_KEY,
@@ -84,8 +112,11 @@ function drawBall(ctx, x, y, radius, color) {
 async function generateStatsImage() {
     console.log('Starting PNG generation...');
 
+    // Get main profile
+    const { profile: profileName, binId } = await getMainProfile();
+
     // Fetch current voting data
-    const votingData = await fetchVotingData();
+    const votingData = await fetchVotingData(binId);
     const totalVotes = Object.values(votingData.votes).reduce((a, b) => a + b, 0);
     console.log(`Loaded data: ${votingData.items.length} items, ${totalVotes} total votes`);
 
