@@ -674,56 +674,38 @@
                 min-width: unset;
             }
 
+            /* Hide QR code on mobile */
             .qr-container {
-                padding: 10px;
+                display: none !important;
             }
 
-            #qrcode canvas {
-                width: 120px !important;
-                height: 120px !important;
-            }
-
+            /* Hide timelapse controls on mobile */
             .timelapse-controls {
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .timelapse-button {
-                font-size: 0.85em;
-                padding: 8px 16px;
-            }
-
-            .speed-control {
-                font-size: 0.8em;
-                padding: 4px 8px;
-            }
-
-            .speed-button {
-                font-size: 0.75em;
-                padding: 2px 6px;
+                display: none !important;
             }
 
             .timelapse-indicator {
-                top: 60px;
-                font-size: 0.85em;
-                padding: 8px 15px;
+                display: none !important;
             }
 
             .main-content {
                 flex-direction: column;
                 padding: 0 10px 10px;
-                gap: 15px;
-                min-height: calc(100vh - 120px);
+                gap: 20px;
+                min-height: 0;
+                overflow-y: auto;
             }
 
             .voting-section {
-                flex: 1;
+                flex: none;
                 min-height: 0;
+                margin-bottom: 20px;
             }
 
             .results-section {
                 flex: none;
                 height: auto;
+                min-height: 200px;
             }
 
             .voting-arena {
@@ -772,10 +754,12 @@
             }
             
             .leaderboard {
-                max-height: 25vh;
+                max-height: 300px;
+                min-height: 200px;
                 padding: 10px;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
+                margin-top: 10px;
             }
 
             .leaderboard-title {
@@ -851,38 +835,7 @@
             .title { font-size: 1.8em; }
             .subtitle { font-size: 1em; }
 
-            #qrcode canvas {
-                width: 100px !important;
-                height: 100px !important;
-            }
-
-            .qr-container {
-                padding: 8px;
-            }
-
-            .qr-title {
-                font-size: 0.8em;
-            }
-
-            .qr-url {
-                font-size: 0.7em;
-                max-width: 150px;
-            }
-
-            .timelapse-button {
-                font-size: 0.8em;
-                padding: 7px 14px;
-            }
-
-            .speed-control {
-                font-size: 0.75em;
-            }
-
-            .timelapse-indicator {
-                top: 50px;
-                font-size: 0.8em;
-                padding: 6px 12px;
-            }
+            /* QR and timelapse already hidden in 768px breakpoint */
 
             .main-content {
                 padding: 0 5px 5px;
@@ -927,8 +880,10 @@
             }
 
             .leaderboard {
-                max-height: 22vh;
+                max-height: 280px;
+                min-height: 180px;
                 padding: 8px;
+                margin-top: 10px;
             }
 
             .leaderboard-title {
