@@ -8,7 +8,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Technology Voting 2000-2025</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <!-- Cache invalidation meta tags -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -70,6 +73,168 @@
             padding: 15px 20px;
             color: white;
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .header-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .qr-title {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0;
+            text-align: center;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #qrcode canvas {
+            display: block;
+        }
+
+        .qr-url {
+            font-size: 0.8em;
+            color: #667eea;
+            margin: 0;
+            word-break: break-all;
+            text-align: center;
+            max-width: 200px;
+        }
+
+        .timelapse-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .timelapse-button {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(78, 205, 196, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .timelapse-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.6);
+        }
+
+        .timelapse-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .timelapse-button.playing {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.85em;
+        }
+
+        .speed-button {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+        }
+
+        .speed-button:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .speed-button.active {
+            background: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .timelapse-indicator {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(78, 205, 196, 0.95);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: pulse 1.5s ease-in-out infinite;
+            display: none;
+        }
+
+        .timelapse-indicator.show {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+            50% { opacity: 0.8; transform: translateX(-50%) scale(1.05); }
         }
 
         .title {
@@ -485,20 +650,64 @@
             body {
                 font-size: 16px;
             }
-            
-            .title { 
-                font-size: 2em; 
+
+            .title {
+                font-size: 2em;
                 line-height: 1.2;
             }
-            .subtitle { 
-                font-size: 1.1em; 
+            .subtitle {
+                font-size: 1.1em;
                 margin-bottom: 5px;
             }
-            .header { 
-                padding: 15px; 
+            .header {
+                padding: 15px;
                 min-height: auto;
             }
-            
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-text {
+                min-width: unset;
+            }
+
+            .qr-container {
+                padding: 10px;
+            }
+
+            #qrcode canvas {
+                width: 120px !important;
+                height: 120px !important;
+            }
+
+            .timelapse-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .timelapse-button {
+                font-size: 0.85em;
+                padding: 8px 16px;
+            }
+
+            .speed-control {
+                font-size: 0.8em;
+                padding: 4px 8px;
+            }
+
+            .speed-button {
+                font-size: 0.75em;
+                padding: 2px 6px;
+            }
+
+            .timelapse-indicator {
+                top: 60px;
+                font-size: 0.85em;
+                padding: 8px 15px;
+            }
+
             .main-content {
                 flex-direction: column;
                 padding: 0 10px 10px;
@@ -623,7 +832,40 @@
         @media (max-width: 480px) {
             .title { font-size: 1.8em; }
             .subtitle { font-size: 1em; }
-            
+
+            #qrcode canvas {
+                width: 100px !important;
+                height: 100px !important;
+            }
+
+            .qr-container {
+                padding: 8px;
+            }
+
+            .qr-title {
+                font-size: 0.8em;
+            }
+
+            .qr-url {
+                font-size: 0.7em;
+                max-width: 150px;
+            }
+
+            .timelapse-button {
+                font-size: 0.8em;
+                padding: 7px 14px;
+            }
+
+            .speed-control {
+                font-size: 0.75em;
+            }
+
+            .timelapse-indicator {
+                top: 50px;
+                font-size: 0.8em;
+                padding: 6px 12px;
+            }
+
             .main-content {
                 padding: 0 5px 5px;
                 gap: 15px;
@@ -691,10 +933,31 @@
     
     <div class="container">
         <div class="header">
-            <h1 class="title">Most Important Technology</h1>
-            <p class="subtitle">2000-2025 • Vote for your favorite!</p>
-            <div class="mode-indicator" id="modeIndicator">Loading...</div>
-            <p id="voterInfo" style="opacity: 0.8; margin-top: 5px;"></p>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1 class="title">Most Important Technology</h1>
+                    <p class="subtitle">2000-2025 • Vote for your favorite!</p>
+                    <div class="mode-indicator" id="modeIndicator">Loading...</div>
+                    <p id="voterInfo" style="opacity: 0.8; margin-top: 5px;"></p>
+                </div>
+                <div class="qr-container">
+                    <p class="qr-title">📱 Scan to Vote</p>
+                    <div id="qrcode"></div>
+                    <p class="qr-url">event.codenotary.io</p>
+                </div>
+            </div>
+            <div class="timelapse-controls">
+                <button class="timelapse-button" id="timelapseButton" onclick="toggleTimelapse()">
+                    <span id="timelapseIcon">▶️</span>
+                    <span id="timelapseText">Play Time Lapse</span>
+                </button>
+                <div class="speed-control">
+                    <span>Speed:</span>
+                    <button class="speed-button active" onclick="setTimelapseSpeed(1)" id="speed1x">1x</button>
+                    <button class="speed-button" onclick="setTimelapseSpeed(2)" id="speed2x">2x</button>
+                    <button class="speed-button" onclick="setTimelapseSpeed(4)" id="speed4x">4x</button>
+                </div>
+            </div>
         </div>
 
         <div class="main-content">
@@ -712,6 +975,7 @@
     </div>
 
     <div class="status-message" id="statusMessage"></div>
+    <div class="timelapse-indicator" id="timelapseIndicator">⏱️ Time Lapse Playing...</div>
     
     <div class="codenotary-logo">
         <a href="https://www.codenotary.com" target="_blank" rel="noopener noreferrer">
@@ -721,5 +985,169 @@
 
     <script src="config.js"></script>
     <script src="app-backend.js"></script>
+    <script>
+        // Generate QR code on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const qrcode = new QRCode(document.getElementById('qrcode'), {
+                text: 'https://event.codenotary.io/',
+                width: 150,
+                height: 150,
+                colorDark: '#667eea',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        });
+
+        // Time Lapse Feature
+        let timelapseActive = false;
+        let timelapseInterval = null;
+        let timelapseSpeed = 1;
+        let originalVotes = {};
+        let timelapseProgress = 0;
+
+        function toggleTimelapse() {
+            const button = document.getElementById('timelapseButton');
+            const icon = document.getElementById('timelapseIcon');
+            const text = document.getElementById('timelapseText');
+            const indicator = document.getElementById('timelapseIndicator');
+
+            if (timelapseActive) {
+                // Stop timelapse
+                stopTimelapse();
+                button.classList.remove('playing');
+                icon.textContent = '▶️';
+                text.textContent = 'Play Time Lapse';
+                indicator.classList.remove('show');
+            } else {
+                // Start timelapse
+                startTimelapse();
+                button.classList.add('playing');
+                icon.textContent = '⏸️';
+                text.textContent = 'Pause Time Lapse';
+                indicator.classList.add('show');
+            }
+        }
+
+        function startTimelapse() {
+            timelapseActive = true;
+
+            // Store original vote counts
+            originalVotes = {};
+            Object.keys(CONFIG.votes).forEach(item => {
+                originalVotes[item] = CONFIG.votes[item];
+            });
+
+            // Reset votes to 0
+            Object.keys(CONFIG.votes).forEach(item => {
+                CONFIG.votes[item] = 0;
+            });
+            updateDisplay();
+            timelapseProgress = 0;
+
+            // Calculate total votes and create animation steps
+            const maxVotes = Math.max(...Object.values(originalVotes));
+            const steps = maxVotes;
+
+            // Animate vote counts incrementally
+            const baseInterval = 100; // Base speed in ms
+            const interval = baseInterval / timelapseSpeed;
+
+            timelapseInterval = setInterval(() => {
+                timelapseProgress++;
+
+                // Increment votes proportionally
+                Object.keys(CONFIG.votes).forEach(item => {
+                    const targetVotes = originalVotes[item];
+                    const progressRatio = timelapseProgress / steps;
+                    const currentVotes = Math.floor(targetVotes * progressRatio);
+
+                    // Add some randomness to make it more realistic
+                    if (Math.random() < (targetVotes - CONFIG.votes[item]) / targetVotes) {
+                        CONFIG.votes[item] = Math.min(currentVotes, targetVotes);
+                    }
+                });
+
+                updateDisplay();
+
+                // Check if animation is complete
+                const allComplete = Object.keys(CONFIG.votes).every(item =>
+                    CONFIG.votes[item] >= originalVotes[item]
+                );
+
+                if (allComplete || timelapseProgress >= steps * 2) {
+                    // Ensure final values are accurate
+                    Object.keys(CONFIG.votes).forEach(item => {
+                        CONFIG.votes[item] = originalVotes[item];
+                    });
+                    updateDisplay();
+                    stopTimelapse();
+
+                    // Reset button state
+                    const button = document.getElementById('timelapseButton');
+                    const icon = document.getElementById('timelapseIcon');
+                    const text = document.getElementById('timelapseText');
+                    const indicator = document.getElementById('timelapseIndicator');
+
+                    button.classList.remove('playing');
+                    icon.textContent = '▶️';
+                    text.textContent = 'Replay Time Lapse';
+                    indicator.classList.remove('show');
+                }
+            }, interval);
+        }
+
+        function stopTimelapse() {
+            timelapseActive = false;
+            if (timelapseInterval) {
+                clearInterval(timelapseInterval);
+                timelapseInterval = null;
+            }
+
+            // Restore original votes
+            if (Object.keys(originalVotes).length > 0) {
+                Object.keys(originalVotes).forEach(item => {
+                    CONFIG.votes[item] = originalVotes[item];
+                });
+                updateDisplay();
+            }
+        }
+
+        function setTimelapseSpeed(speed) {
+            timelapseSpeed = speed;
+
+            // Update active button
+            document.querySelectorAll('.speed-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`speed${speed}x`).classList.add('active');
+
+            // If timelapse is active, restart with new speed
+            if (timelapseActive) {
+                const wasPlaying = timelapseActive;
+                stopTimelapse();
+                if (wasPlaying) {
+                    startTimelapse();
+
+                    // Update button state
+                    const button = document.getElementById('timelapseButton');
+                    const icon = document.getElementById('timelapseIcon');
+                    const text = document.getElementById('timelapseText');
+                    const indicator = document.getElementById('timelapseIndicator');
+
+                    button.classList.add('playing');
+                    icon.textContent = '⏸️';
+                    text.textContent = 'Pause Time Lapse';
+                    indicator.classList.add('show');
+                }
+            }
+        }
+
+        // Ensure timelapse stops when page visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && timelapseActive) {
+                toggleTimelapse();
+            }
+        });
+    </script>
 </body>
 </html>
